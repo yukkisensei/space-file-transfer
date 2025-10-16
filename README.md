@@ -93,7 +93,8 @@ MIT License - Free to use
 
 ## 👨‍💻 Phát triển
 
-Được phát triển với ❤️ và ☕
+Made with ❤️ 
+By Yuu and Lt4c
 
 ---
 
