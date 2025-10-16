@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space File Transfer - Chia sẻ file miễn phí</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated space background -->
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
+    </div>
+
+    <!-- Main container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>Space Transfer</h1>
+            </div>
+            <nav class="nav">
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('upload')">
+                    <span>Upload</span>
+                </button>
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('download')">
+                    <span>Download</span>
+                </button>
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('about')">
+                    <span>About</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="section active">
+            <div class="glass-card">
+                <h2 class="section-title">Upload Your Files</h2>
+                <p class="section-subtitle">Chia sẻ file an toàn và miễn phí</p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Kéo thả file vào đây</h3>
+                    <p>hoặc</p>
+                    <button class="liquid-glass-btn upload-btn">
+                        <span>Chọn file</span>
+                    </button>
+                    <input type="file" id="fileInput" multiple hidden>
+                </div>
+
+                <div id="fileList" class="file-list"></div>
+
+                <div id="uploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Đang upload: 0%</p>
+                </div>
+
+                <div id="uploadResult" class="upload-result hidden">
+                    <div class="result-card glass-card">
+                        <h3>✨ Upload thành công!</h3>
+                        <div class="share-link">
+                            <input type="text" id="shareLink" readonly>
+                            <button class="liquid-glass-btn copy-btn" onclick="copyLink()">
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <p class="result-info">Link sẽ hết hạn sau 7 ngày</p>
+                        <button class="liquid-glass-btn" onclick="resetUpload()">
+                            <span>Upload file khác</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section id="download-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">Download Files</h2>
+                <p class="section-subtitle">Nhập mã hoặc link để tải file</p>
+                
+                <div class="download-input-area">
+                    <input type="text" id="downloadCode" class="glass-input" placeholder="Nhập mã file hoặc link...">
+                    <button class="liquid-glass-btn download-btn" onclick="downloadFile()">
+                        <span>Tải xuống</span>
+                    </button>
+                </div>
+
+                <div id="downloadInfo" class="download-info hidden">
+                    <div class="file-info-card glass-card">
+                        <div class="file-icon">📄</div>
+                        <h3 id="fileName">example.pdf</h3>
+                        <p class="file-size" id="fileSize">2.5 MB</p>
+                        <button class="liquid-glass-btn download-action-btn">
+                            <span>Tải xuống</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">About Space Transfer</h2>
+                <div class="about-content">
+                    <div class="feature-grid">
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Bảo mật</h3>
+                            <p>File được mã hóa end-to-end, đảm bảo an toàn tuyệt đối</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Nhanh chóng</h3>
+                            <p>Upload và download với tốc độ cao nhất</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🆓</div>
+                            <h3>Miễn phí</h3>
+                            <p>Hoàn toàn miễn phí, không giới hạn số lượng file</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🌐</div>
+                            <h3>Không cần đăng ký</h3>
+                            <p>Sử dụng ngay không cần tạo tài khoản</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tech-info glass-card">
+                        <h3>Công nghệ</h3>
+                        <p>Space Transfer sử dụng công nghệ WebRTC và IndexedDB để lưu trữ file tạm thời trên trình duyệt. 
+                        File của bạn được lưu trữ local và chia sẻ peer-to-peer, đảm bảo quyền riêng tư tối đa.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made with 💜 by Yuu</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
