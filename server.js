@@ -1,14 +1,17 @@
 // ============================================
 // SPACE FILE TRANSFER - BACKEND SERVER
-// Node.js + Express + Multer
+// Node.js + Express + Multer + Cloudinary
 // ============================================
 
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { nanoid } = require('nanoid');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // ============================================
 // CẤU HÌNH SERVER
@@ -22,28 +25,38 @@ app.use(cors()); // Cho phép CORS từ mọi nguồn
 app.use(express.json()); // Parse JSON body
 app.use(express.static('.')); // Serve static files (HTML, CSS, JS)
 
-// Tạo thư mục uploads nếu chưa có
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-    console.log('✅ Created uploads directory');
-}
-
 // ============================================
-// CẤU HÌNH MULTER (Upload File)
+// CẤU HÌNH CLOUDINARY
 // ============================================
 
-// Storage configuration - Lưu file với tên unique
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir); // Lưu vào thư mục uploads
-    },
-    filename: function (req, file, cb) {
-        // Tạo tên file unique: timestamp + random + original name
-        const uniqueSuffix = Date.now() + '-' + nanoid(10);
-        const ext = path.extname(file.originalname);
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+console.log('✅ Cloudinary configured:', process.env.CLOUDINARY_CLOUD_NAME);
+
+// ============================================
+// CẤU HÌNH MULTER (Upload File) - CLOUDINARY
+// ============================================
+
+// Cloudinary storage configuration
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        // Lấy extension từ filename
+        const ext = path.extname(file.originalname) || '.bin';
         const nameWithoutExt = path.basename(file.originalname, ext);
-        cb(null, uniqueSuffix + '-' + nameWithoutExt + ext);
+        const uniqueSuffix = Date.now() + '-' + nanoid(10);
+        
+        return {
+            folder: 'space-file-transfer',
+            resource_type: 'auto', // Để Cloudinary tự detect
+            public_id: `${uniqueSuffix}-${nameWithoutExt}`,
+            use_filename: false,
+            unique_filename: true
+        };
     }
 });
 
@@ -93,6 +106,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             code: fileCode,
             originalName: req.file.originalname,
             filename: req.file.filename,
+            cloudinaryUrl: req.file.path, // Cloudinary URL
             size: req.file.size,
             mimetype: req.file.mimetype,
             uploadDate: new Date().toISOString(),
@@ -138,14 +152,7 @@ app.get('/api/file/:code', (req, res) => {
             });
         }
 
-        // Kiểm tra file có tồn tại trên disk không
-        const filePath = path.join(uploadsDir, fileInfo.filename);
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({
-                success: false,
-                message: 'File not found on server'
-            });
-        }
+        // File lưu trên Cloudinary, không cần kiểm tra disk
 
         // Trả về thông tin file (không bao gồm filename thực)
         res.json({
@@ -185,29 +192,13 @@ app.get('/api/download/:code', (req, res) => {
             });
         }
 
-        // Đường dẫn file thực
-        const filePath = path.join(uploadsDir, fileInfo.filename);
-
-        // Kiểm tra file có tồn tại không
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({
-                success: false,
-                message: 'File not found on server'
-            });
-        }
-
         // Tăng download count
         fileInfo.downloadCount++;
 
         console.log(`📥 File downloaded: ${fileInfo.originalName} (Code: ${code})`);
 
-        // Set headers và gửi file
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileInfo.originalName)}"`);
-        res.setHeader('Content-Type', fileInfo.mimetype);
-        
-        // Stream file về client
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
+        // Redirect to Cloudinary URL (file sẽ download trực tiếp từ Cloudinary)
+        res.redirect(fileInfo.cloudinaryUrl);
 
     } catch (error) {
         console.error('❌ Download error:', error);
@@ -343,7 +334,7 @@ app.listen(PORT, () => {
     console.log('🌌 ═══════════════════════════════════════════════');
     console.log('');
     console.log(`🚀 Server running on: http://localhost:${PORT}`);
-    console.log(`📁 Uploads directory: ${uploadsDir}`);
+    console.log(`☁️  Storage: Cloudinary (${process.env.CLOUDINARY_CLOUD_NAME})`);
     console.log(`💾 Files in database: ${Object.keys(filesDatabase).length}`);
     console.log('');
     console.log('📡 API Endpoints:');
