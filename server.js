@@ -97,6 +97,10 @@ console.log('✅ Predefined admins loaded:', Object.keys(predefinedAdmins).lengt
 const USERS_FILE_PUBLIC_ID = 'space-file-transfer/users-database';
 const FILES_DB_PUBLIC_ID = 'space-file-transfer/files-database';
 
+// Upload lock status
+let uploadLocked = false;
+let uploadLockReason = '';
+
 // Load files database from Cloudinary
 async function loadFilesFromCloudinary() {
     try {
@@ -229,6 +233,9 @@ function scheduleFileDeletion(fileCode, fileSize) {
                 delete filesDatabase[fileCode];
                 await saveFilesToCloudinary();
                 console.log(`🗑️ Auto-deleted from database: ${fileInfo.originalName} (Code: ${fileCode})`);
+                
+                // Check if we can unlock upload after deletion
+                await checkAndUnlockUpload();
             } catch (error) {
                 console.error('❌ Auto-delete error:', error);
             }
@@ -236,9 +243,11 @@ function scheduleFileDeletion(fileCode, fileSize) {
     }, expiryTime);
 }
 
-function checkExpiredFiles() {
+async function checkExpiredFiles() {
     const now = Date.now();
-    Object.keys(filesDatabase).forEach(async (fileCode) => {
+    let deletedAny = false;
+    
+    for (const fileCode of Object.keys(filesDatabase)) {
         const fileInfo = filesDatabase[fileCode];
         const uploadTime = new Date(fileInfo.uploadDate).getTime();
         const timeDiff = now - uploadTime;
@@ -256,11 +265,43 @@ function checkExpiredFiles() {
                 delete filesDatabase[fileCode];
                 await saveFilesToCloudinary();
                 console.log(`🗑️ Expired file deleted: ${fileInfo.originalName} (Code: ${fileCode})`);
+                deletedAny = true;
             } catch (error) {
                 console.error('❌ Expired file deletion error:', error);
             }
         }
-    });
+    }
+    
+    // Check if we can unlock upload after deletions
+    if (deletedAny) {
+        await checkAndUnlockUpload();
+    }
+}
+
+// Check if we can unlock upload after file deletion
+async function checkAndUnlockUpload() {
+    if (!uploadLocked) return;
+    
+    try {
+        const storageConfig = require('./storage-config');
+        const status = await storageConfig.getStorageStatus();
+        
+        // Unlock if storage drops below 90%
+        if (status.total.percent < 90) {
+            uploadLocked = false;
+            uploadLockReason = '';
+            console.log('✅ Upload unlocked! Storage: ' + status.total.percent.toFixed(1) + '%');
+            
+            // Send notification
+            await storageConfig.sendAdminNotification({
+                type: 'info',
+                message: `✅ Upload đã được mở khóa! Storage hiện tại: ${status.total.percent.toFixed(1)}%`,
+                usage: status.total
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error checking unlock status:', error);
+    }
 }
 
 // Check for expired files every hour
@@ -351,6 +392,28 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             });
         }
 
+        // Check if upload is locked
+        if (uploadLocked) {
+            console.log('🔒 Upload is locked:', uploadLockReason);
+            
+            // Delete the already uploaded file from Cloudinary
+            if (req.file.filename) {
+                try {
+                    await cloudinary.uploader.destroy(req.file.filename);
+                    console.log('🗑️ Cleaned up uploaded file due to upload lock');
+                } catch (deleteError) {
+                    console.error('Failed to cleanup file:', deleteError);
+                }
+            }
+            
+            return res.status(503).json({
+                success: false,
+                message: uploadLockReason || 'Upload is temporarily locked due to storage limit. Please wait for files to expire.',
+                error: 'UPLOAD_LOCKED',
+                uploadLocked: true
+            });
+        }
+
         // Check storage before processing upload
         const storageConfig = require('./storage-config');
         try {
@@ -369,11 +432,17 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             }
             
             if (storageError.message === 'STORAGE_FULL') {
+                // Lock upload
+                uploadLocked = true;
+                uploadLockReason = '🔒 Storage đã đầy (≥95%)! Upload bị khóa cho đến khi có file hết hạn và giải phóng dung lượng.';
+                console.log('🔒 Upload locked due to storage full');
+                
                 return res.status(507).json({
                     success: false,
-                    message: 'Storage is full! Upload has been blocked.',
+                    message: uploadLockReason,
                     error: 'STORAGE_FULL',
-                    storageFull: true
+                    storageFull: true,
+                    uploadLocked: true
                 });
             }
             
@@ -628,6 +697,10 @@ app.get('/api/storage/status', async (req, res) => {
         
         // Add total files count from database
         status.totalFiles = Object.keys(filesDatabase).length;
+        
+        // Add upload lock status
+        status.uploadLocked = uploadLocked;
+        status.uploadLockReason = uploadLockReason;
 
         res.json({
             success: true,

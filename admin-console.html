@@ -240,6 +240,11 @@
                     <p>Notifications</p>
                     <h3 id="totalNotifications">0</h3>
                 </div>
+                <div class="stat-card" id="uploadLockCard" style="display: none;">
+                    <p>Upload Status</p>
+                    <h3 id="uploadLockStatus" style="font-size: 1.5rem;">🔒 LOCKED</h3>
+                    <p id="uploadLockReason" style="font-size: 0.85rem; margin-top: 10px;"></p>
+                </div>
             </div>
 
             <!-- Users Section -->
@@ -552,6 +557,23 @@
         function displayStorageStats(data) {
             document.getElementById('storageUsed').textContent = data.usedGB.toFixed(2) + ' GB';
             document.getElementById('totalFiles').textContent = data.totalFiles;
+            
+            // Show/hide upload lock status
+            const lockCard = document.getElementById('uploadLockCard');
+            const lockStatus = document.getElementById('uploadLockStatus');
+            const lockReason = document.getElementById('uploadLockReason');
+            
+            if (data.uploadLocked) {
+                lockCard.style.display = 'block';
+                lockStatus.textContent = '🔒 LOCKED';
+                lockStatus.style.color = '#ef4444';
+                lockReason.textContent = data.uploadLockReason || 'Upload is locked';
+            } else {
+                lockCard.style.display = 'block';
+                lockStatus.textContent = '✅ ACTIVE';
+                lockStatus.style.color = '#22c55e';
+                lockReason.textContent = 'Upload is available';
+            }
         }
 
         function displayPendingLogins(requests) {

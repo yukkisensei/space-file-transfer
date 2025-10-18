@@ -742,9 +742,12 @@ async function uploadFiles() {
                                 completeUpload(response.data);
                             }
                             resolve();
-                        } else if (xhr.status === 507 && response.storageFull) {
+                        } else if (xhr.status === 503 && response.uploadLocked) {
+                            // Upload locked error
+                            reject(new Error(response.message || 'Upload is temporarily locked. Please wait for files to expire.'));
+                        } else if (xhr.status === 507 && (response.storageFull || response.uploadLocked)) {
                             // Storage full error
-                            reject(new Error('Storage is full! Upload has been blocked.'));
+                            reject(new Error(response.message || 'Storage is full! Upload has been blocked.'));
                         } else {
                             reject(new Error(response.message || `Upload failed (Status: ${xhr.status})`));
                         }
