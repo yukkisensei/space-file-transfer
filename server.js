@@ -351,6 +351,39 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             });
         }
 
+        // Check storage before processing upload
+        const storageConfig = require('./storage-config');
+        try {
+            await storageConfig.checkStorageBeforeUpload(req.file.size);
+        } catch (storageError) {
+            console.log('❌ Storage check failed:', storageError.message);
+            
+            // Delete the already uploaded file from Cloudinary
+            if (req.file.filename) {
+                try {
+                    await cloudinary.uploader.destroy(req.file.filename);
+                    console.log('🗑️ Cleaned up uploaded file due to storage error');
+                } catch (deleteError) {
+                    console.error('Failed to cleanup file:', deleteError);
+                }
+            }
+            
+            if (storageError.message === 'STORAGE_FULL') {
+                return res.status(507).json({
+                    success: false,
+                    message: 'Storage is full! Upload has been blocked.',
+                    error: 'STORAGE_FULL',
+                    storageFull: true
+                });
+            }
+            
+            return res.status(507).json({
+                success: false,
+                message: storageError.message || 'Storage limit exceeded',
+                error: 'STORAGE_ERROR'
+            });
+        }
+
         // Tạo mã file unique (6 ký tự)
         const fileCode = nanoid(6);
 

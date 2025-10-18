@@ -240,6 +240,7 @@ module.exports = {
     uploadFile,
     deleteFile,
     checkCloudinaryUsage,
+    checkStorageBeforeUpload,
     sendAdminNotification,
     startStorageMonitoring,
     getStorageStatus,

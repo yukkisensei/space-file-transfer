@@ -423,6 +423,9 @@
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
 
+                // Start auto-refresh for storage and notifications
+                startAutoRefresh();
+
             } catch (error) {
                 console.error('Error loading admin data:', error);
                 document.getElementById('loadingState').style.display = 'none';
@@ -430,6 +433,55 @@
                 document.getElementById('errorMessage').textContent = 'Failed to load admin data: ' + error.message;
             }
         }
+
+        // Auto-refresh storage status and notifications every 10 seconds
+        let refreshInterval = null;
+        
+        function startAutoRefresh() {
+            // Clear any existing interval
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(async () => {
+                try {
+                    // Refresh storage status
+                    const storageRes = await fetch(`${API_URL}/api/storage/status`);
+                    const storageData = await storageRes.json();
+                    
+                    if (storageData.success) {
+                        displayStorageStats(storageData.data);
+                    }
+                    
+                    // Refresh notifications (owner only)
+                    if (currentUser && currentUser.isOwner) {
+                        const notifRes = await fetch(`${API_URL}/api/admin/console/notifications?username=${currentUser.username}`);
+                        const notifData = await notifRes.json();
+                        
+                        if (notifData.success) {
+                            displayNotifications(notifData.data);
+                        }
+                        
+                        // Refresh pending logins
+                        const pendingRes = await fetch(`${API_URL}/api/admin/pending-logins?username=${currentUser.username}`);
+                        const pendingData = await pendingRes.json();
+                        
+                        if (pendingData.success) {
+                            displayPendingLogins(pendingData.data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Auto-refresh error:', error);
+                }
+            }, 10000); // 10 seconds
+        }
+        
+        // Stop auto-refresh when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
 
         function displayUsers(users) {
             const tbody = document.getElementById('usersTableBody');
