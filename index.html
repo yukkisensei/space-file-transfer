@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YuFile - Chia sẻ file miễn phí</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E⚡%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated space background -->
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
+    </div>
+
+    <!-- Main container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>YuFile</h1>
+            </div>
+            <nav class="nav">
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('upload')">
+                    <span>📤 Upload</span>
+                </button>
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('download')">
+                    <span>📥 Download</span>
+                </button>
+                <button class="liquid-glass-btn nav-btn" onclick="showSection('information')">
+                    <span>ℹ️ Information</span>
+                </button>
+            </nav>
+            <div class="auth-buttons" id="authButtons">
+                <button class="liquid-glass-btn auth-btn" onclick="showSection('signin')">
+                    <span>Sign In</span>
+                </button>
+                <button class="liquid-glass-btn auth-btn" onclick="showSection('signup')">
+                    <span>Sign Up</span>
+                </button>
+            </div>
+            <div class="user-info hidden" id="userInfo">
+                <span class="username" id="usernameDisplay"></span>
+                <button class="liquid-glass-btn nav-btn" id="myFilesBtn2" onclick="showSection('myfiles')" style="display: none;">
+                    <span>📁 My Files</span>
+                </button>
+                <button class="liquid-glass-btn nav-btn" id="profileBtn" onclick="showSection('profile')" style="display: none;">
+                    <span>👤 Profile</span>
+                </button>
+                <button class="liquid-glass-btn admin-console-btn hidden" id="adminConsoleBtn" onclick="goToAdminConsole()">
+                    <span>👑 Admin</span>
+                </button>
+                <button class="liquid-glass-btn logout-btn" onclick="logout()">
+                    <span>🚪 Logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sign Up Section -->
+        <section id="signup-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">Sign Up</h2>
+                <p class="section-subtitle">Tạo tài khoản để upload file</p>
+                
+                <form class="auth-form" id="signupForm">
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" class="glass-input" placeholder="Nhập username..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="glass-input" placeholder="Nhập password..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" class="glass-input" placeholder="Nhập lại password..." required>
+                    </div>
+                    <button type="submit" class="liquid-glass-btn submit-btn">
+                        <span>Đăng ký</span>
+                    </button>
+                    <p class="auth-switch">Đã có tài khoản? <a href="#" onclick="showSection('signin'); return false;">Sign In</a></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Sign In Section -->
+        <section id="signin-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">Sign In</h2>
+                <p class="section-subtitle">Đăng nhập để upload file</p>
+                
+                <form class="auth-form" id="signinForm">
+                    <div class="form-group">
+                        <label for="signinUsername">Username</label>
+                        <input type="text" id="signinUsername" class="glass-input" placeholder="Nhập username..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signinPassword">Password</label>
+                        <input type="password" id="signinPassword" class="glass-input" placeholder="Nhập password..." required>
+                    </div>
+                    <button type="submit" class="liquid-glass-btn submit-btn">
+                        <span>Đăng nhập</span>
+                    </button>
+                    <p class="auth-switch">Chưa có tài khoản? <a href="#" onclick="showSection('signup'); return false;">Sign Up</a></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="section active">
+            <div class="glass-card">
+                <h2 class="section-title">Upload Your Files</h2>
+                <p class="section-subtitle">Chia sẻ file an toàn và miễn phí</p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Kéo thả file vào đây</h3>
+                    <p>hoặc</p>
+                    <button class="liquid-glass-btn upload-btn">
+                        <span>Chọn file</span>
+                    </button>
+                    <input type="file" id="fileInput" multiple hidden>
+                </div>
+
+                <div id="fileList" class="file-list"></div>
+
+                <div id="uploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Đang upload: 0%</p>
+                </div>
+
+                <div id="uploadResult" class="upload-result hidden">
+                    <div class="result-card glass-card">
+                        <h3>✨ Upload thành công!</h3>
+                        <div class="share-link">
+                            <input type="text" id="shareLink" readonly>
+                            <button class="liquid-glass-btn copy-btn" onclick="copyLink()">
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <p class="result-info">⚠️ File sẽ tự động bị xóa sau 24 giờ kể từ lúc upload</p>
+                        <button class="liquid-glass-btn" onclick="resetUpload()">
+                            <span>Upload file khác</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section id="download-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">Download Files</h2>
+                <p class="section-subtitle">Nhập mã hoặc link để tải file</p>
+                
+                <div class="download-input-area">
+                    <input type="text" id="downloadCode" class="glass-input" placeholder="Nhập mã file hoặc link...">
+                    <button class="liquid-glass-btn download-btn" onclick="downloadFile()">
+                        <span>Tải xuống</span>
+                    </button>
+                </div>
+
+                <div id="downloadInfo" class="download-info hidden">
+                    <div class="file-info-card glass-card">
+                        <div class="file-icon">📄</div>
+                        <h3 id="fileName">example.pdf</h3>
+                        <p class="file-size" id="fileSize">2.5 MB</p>
+                        <p class="download-notice">🔒 Cần đăng nhập để tải file</p>
+                        <button class="liquid-glass-btn download-action-btn">
+                            <span>Tải xuống</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Files Section -->
+        <section id="myfiles-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">My Files</h2>
+                <p class="section-subtitle">Quản lý các file bạn đã upload</p>
+                
+                <div id="myFilesList" class="my-files-list">
+                    <p class="loading-text">Đang tải...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">User Profile</h2>
+                <p class="section-subtitle">Cập nhật thông tin cá nhân</p>
+                
+                <div class="profile-container">
+                    <div class="profile-avatar-section">
+                        <div class="avatar-preview" id="avatarPreview">
+                            <span class="avatar-placeholder">👤</span>
+                        </div>
+                        <input type="text" id="avatarUrl" class="glass-input" placeholder="Avatar URL (emoji hoặc link ảnh)">
+                    </div>
+                    
+                    <div class="profile-form">
+                        <div class="form-group">
+                            <label for="profileDisplayName">Display Name</label>
+                            <input type="text" id="profileDisplayName" class="glass-input" placeholder="Tên hiển thị...">
+                        </div>
+                        
+                        <button class="liquid-glass-btn" onclick="updateProfile()">
+                            <span>💾 Lưu thay đổi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Information Section -->
+        <section id="information-section" class="section">
+            <div class="glass-card">
+                <h2 class="section-title">Information</h2>
+                <div class="about-content">
+                    <div class="feature-grid">
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Bảo mật</h3>
+                            <p>File được mã hóa end-to-end, đảm bảo an toàn tuyệt đối</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Nhanh chóng</h3>
+                            <p>Upload và download với tốc độ cao nhất</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">🆓</div>
+                            <h3>Miễn phí</h3>
+                            <p>Hoàn toàn miễn phí, không giới hạn số lượng file</p>
+                        </div>
+                        <div class="feature-card glass-card">
+                            <div class="feature-icon">⏰</div>
+                            <h3>Tự động xóa</h3>
+                            <p>File sẽ tự động bị xóa sau 24 giờ kể từ lúc upload</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tech-info glass-card">
+                        <h3>Lưu ý quan trọng</h3>
+                        <ul class="info-list">
+                            <li>📤 Cần đăng nhập để upload file</li>
+                            <li>📥 Cần đăng nhập để download file</li>
+                            <li>👀 Có thể xem thông tin file không cần đăng nhập</li>
+                            <li>⏰ Thời gian lưu trữ file:</li>
+                            <li style="padding-left: 2rem;">• Dưới 100MB: 30 giờ</li>
+                            <li style="padding-left: 2rem;">• Dưới 1GB: 24 giờ</li>
+                            <li style="padding-left: 2rem;">• Dưới 5GB: 12 giờ</li>
+                            <li style="padding-left: 2rem;">• Từ 5GB trở lên: 1 giờ</li>
+                            <li>👤 User không hoạt động sẽ bị xóa sau 30 ngày</li>
+                            <li>🔒 File được mã hóa và bảo mật</li>
+                            <li>💾 Giới hạn file tối đa: 10GB</li>
+                            <li>🌐 Chia sẻ link với bất kỳ ai</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Storage Status Bar -->
+    <div class="storage-status-bar" id="storageStatusBar">
+        <div class="storage-info">
+            <span class="storage-icon">💾</span>
+            <span class="storage-text" id="storageText">Loading storage...</span>
+        </div>
+        <div class="storage-progress">
+            <div class="storage-progress-fill" id="storageProgressFill"></div>
+        </div>
+    </div>
+
+    <!-- Storage Full Modal -->
+    <div class="modal hidden" id="storageFullModal">
+        <div class="modal-content">
+            <h2>🚨 Storage Full!</h2>
+            <p>All storage providers are full. Upload has been temporarily disabled.</p>
+            <p>Please contact the administrator.</p>
+            <button class="liquid-glass-btn" onclick="closeStorageFullModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Original by fovos032</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - YuFile</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-wrapper {
+            max-width: 1400px;
+            margin: 80px auto;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+        }
+
+        .admin-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -1px;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(10deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-box:hover::before {
+            left: 100%;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .stat-box h3 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            font-weight: 700;
+        }
+
+        .stat-box p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        table th, table td {
+            padding: 18px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table th {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        table tbody tr {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.01);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        table td {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+        }
+
+        table td:first-child {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .badge-owner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .badge-admin {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .badge-user {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            color: #fff;
+            margin-top: 40px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
+    </div>
+
+    <div class="admin-wrapper">
+        <a href="/" class="liquid-glass-btn" style="display: inline-block; margin-bottom: 20px;">
+            ← Back to Home
+        </a>
+
+        <div class="admin-card">
+            <h1 class="admin-title">👑 Admin Panel</h1>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <p>Total Users</p>
+                    <h3 id="totalUsers">0</h3>
+                </div>
+                <div class="stat-box">
+                    <p>Total Files</p>
+                    <h3 id="totalFiles">0</h3>
+                </div>
+                <div class="stat-box">
+                    <p>Storage Used</p>
+                    <h3 id="storageUsed">0 GB</h3>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <h2 style="color: #fff; margin-top: 40px;">📊 Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Files</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: rgba(255, 255, 255, 0.5);">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Get username from URL or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('user') || (JSON.parse(localStorage.getItem('currentUser') || '{}').username);
+
+        if (!username) {
+            alert('Please login first');
+            window.location.href = '/';
+        }
+
+        const API_URL = window.location.origin;
+
+        // Load admin data
+        async function loadData() {
+            try {
+                // Load stats (simpler endpoint, no auth needed)
+                try {
+                    console.log('Fetching admin stats...');
+                    const statsRes = await fetch(`${API_URL}/api/admin/stats`);
+                    console.log('Stats response status:', statsRes.status);
+                    
+                    const statsData = await statsRes.json();
+                    console.log('Stats data:', statsData);
+
+                    if (statsData.success && statsData.data) {
+                        // Update stats display
+                        document.getElementById('totalUsers').textContent = statsData.data.totalUsers;
+                        document.getElementById('totalFiles').textContent = statsData.data.files;
+                    } else {
+                        console.error('Stats API error:', statsData);
+                        
+                        // Show error in table
+                        document.getElementById('usersTable').innerHTML = `
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #f5576c;">
+                                    API Error: ${statsData.message || 'Unknown error'}
+                                </td>
+                            </tr>
+                        `;
+                    }
+                } catch (statsError) {
+                    console.error('Error loading stats:', statsError);
+                    
+                    // Show error in table
+                    document.getElementById('usersTable').innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #f5576c;">
+                                Error: ${statsError.message}
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                // Load users list
+                try {
+                    const usersRes = await fetch(`${API_URL}/api/admin/console/users?username=${username}`);
+                    const usersData = await usersRes.json();
+
+                    if (usersData.success && usersData.data) {
+                        displayUsers(usersData.data);
+                    } else {
+                        console.error('Users list error:', usersData);
+                    }
+                } catch (usersError) {
+                    console.error('Error loading users list:', usersError);
+                }
+
+                // Load storage
+                try {
+                    const storageRes = await fetch(`${API_URL}/api/storage/status`);
+                    const storageData = await storageRes.json();
+
+                    if (storageData.success && storageData.data) {
+                        const usedGB = storageData.data.usedGB || 0;
+                        const totalFiles = storageData.data.totalFiles || 0;
+                        const maxGB = 25; // Cloudinary free tier
+                        
+                        document.getElementById('storageUsed').textContent = `${usedGB.toFixed(2)} / ${maxGB} GB`;
+                        document.getElementById('totalFiles').textContent = totalFiles;
+                    } else {
+                        console.error('Storage API error:', storageData);
+                        document.getElementById('storageUsed').textContent = '0 / 25 GB';
+                        document.getElementById('totalFiles').textContent = '0';
+                    }
+                } catch (storageError) {
+                    console.error('Error loading storage:', storageError);
+                    document.getElementById('storageUsed').textContent = '0 / 25 GB';
+                    document.getElementById('totalFiles').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('usersTable').innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #f5576c;">
+                            Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTable');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: rgba(255, 255, 255, 0.5);">No users found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td><strong>${user.username}</strong></td>
+                    <td>
+                        ${user.isAdmin 
+                            ? (user.role === 'owner' 
+                                ? '<span class="badge badge-owner">👑 Owner</span>' 
+                                : '<span class="badge badge-admin">⭐ Admin</span>')
+                            : '<span class="badge badge-user">User</span>'}
+                    </td>
+                    <td>${user.uploadedFiles ? user.uploadedFiles.length : 0}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Load data on page load
+        loadData();
+
+        // Auto refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
